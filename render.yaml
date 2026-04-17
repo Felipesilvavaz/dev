@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: agendamed-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: agendamed-db
+          property: connectionString
+      - key: SECRET_KEY
+        value: agendamed-unifil-2025-chave-secreta
+
+  - type: web
+    name: agendamed-frontend
+    runtime: node
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npx serve -s build -l $PORT
+    envVars:
+      - key: REACT_APP_API_URL
+        fromService:
+          name: agendamed-backend
+          type: web
+          property: host
+
+databases:
+  - name: agendamed-db
+    databaseName: agendamed
+    user: agendamed
